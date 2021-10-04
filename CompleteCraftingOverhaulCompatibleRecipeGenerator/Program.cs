@@ -1,6 +1,7 @@
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.FormKeys.SkyrimSE;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Aspects;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Synthesis;
 using System;
@@ -25,6 +26,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
         private readonly static FormLink<IMiscItemGetter> IngotCalcinium = new(new FormKey(UpdateEsm, 0xCC0654));
 
         private readonly static FormLink<IKeywordGetter> WAF_MaterialNordic = new(new FormKey(UpdateEsm, 0xAF0102));
+        private readonly static FormLink<IKeywordGetter> WAF_MaterialChitin = new(new FormKey(UpdateEsm, 0xAF0133));
 
         private readonly static FormLink<IKeywordGetter> WAF_ArmorMaterialAdvanced = new(new FormKey(UpdateEsm, 0xAF0119));
         private readonly static FormLink<IKeywordGetter> WAF_ArmorMaterialDraugr = new(new FormKey(UpdateEsm, 0xAF0135));
@@ -32,6 +34,8 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
         private readonly static FormLink<IKeywordGetter> WAF_ArmorMaterialTGLinwe = new(new FormKey(UpdateEsm, 0xAF0100));
         private readonly static FormLink<IKeywordGetter> WAF_ArmorMaterialTGSummerset = new(new FormKey(UpdateEsm, 0xAF0101));
         private readonly static FormLink<IKeywordGetter> WAF_ArmorMaterialThalmor = new(new FormKey(UpdateEsm, 0xAF0222));
+
+        //private readonly static FormLink<IKeywordGetter> WAF_WeaponMaterialBlades = new(new FormKey(UpdateEsm, 0xAF0103));
 
         private readonly static Dictionary<IFormLinkGetter<IKeywordGetter>, (IFormLinkGetter<IItemGetter> Primary, IFormLinkGetter<IItemGetter> Secondary)> MaterialKeywordToMaterial = new()
         {
@@ -47,7 +51,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             { Dawnguard.Keyword.DLC1WeapMaterialDragonbone, (Skyrim.MiscItem.DragonBone, Skyrim.MiscItem.IngotEbony) },
             { Skyrim.Keyword.WeapMaterialDraugr, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Firewood01) },
             { WAF_ArmorMaterialDraugr, (Skyrim.MiscItem.IngotIron, Skyrim.MiscItem.Leather01) },
-            { Skyrim.Keyword.WeapMaterialDraugrHoned, (Skyrim.MiscItem.IngotIron, Skyrim.MiscItem.Firewood01) },
+            { Skyrim.Keyword.WeapMaterialDraugrHoned, (Skyrim.MiscItem.IngotCorundum, Skyrim.MiscItem.IngotSteel) },
             { Skyrim.Keyword.ArmorMaterialDwarven, (Skyrim.MiscItem.IngotDwarven, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.WeapMaterialDwarven, (Skyrim.MiscItem.IngotDwarven, Skyrim.MiscItem.IngotSteel) },
             { Skyrim.Keyword.ArmorMaterialEbony, (Skyrim.MiscItem.IngotEbony, Skyrim.MiscItem.IngotQuicksilver) },
@@ -61,8 +65,8 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             { Dawnguard.Keyword.DLC1ArmorMaterielFalmerHeavy, (Dawnguard.MiscItem.DLC1ShellbugChitin, Skyrim.MiscItem.IngotEbony) },
             { Dawnguard.Keyword.DLC1ArmorMaterielFalmerHeavyOriginal, (Dawnguard.MiscItem.DLC1ShellbugChitin, Skyrim.MiscItem.IngotEbony) },
             { Skyrim.Keyword.WeapMaterialFalmerHoned, (Skyrim.MiscItem.ChaurusChitin, Skyrim.MiscItem.IngotIron) },
-            { Skyrim.Keyword.ArmorMaterialGlass, (Skyrim.MiscItem.IngotMalachite, Skyrim.MiscItem.Leather01) },
-            { Skyrim.Keyword.WeapMaterialGlass, (Skyrim.MiscItem.IngotMalachite, Skyrim.MiscItem.IngotIron) },
+            { Skyrim.Keyword.ArmorMaterialGlass, (Skyrim.MiscItem.IngotMalachite, Skyrim.MiscItem.IngotIMoonstone) },
+            { Skyrim.Keyword.WeapMaterialGlass, (Skyrim.MiscItem.IngotMalachite, Skyrim.MiscItem.IngotIMoonstone) },
             { Skyrim.Keyword.ArmorMaterialHide, (Skyrim.MiscItem.Leather01, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.WeapMaterialImperial, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.IngotIron) },
             { Skyrim.Keyword.ArmorMaterialImperialHeavy, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
@@ -72,15 +76,15 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             { Skyrim.Keyword.WeapMaterialIron, (Skyrim.MiscItem.IngotIron, Skyrim.MiscItem.IngotIron) },
             { Skyrim.Keyword.ArmorMaterialIronBanded, (Skyrim.MiscItem.IngotIron, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.ArmorMaterialLeather, (Skyrim.MiscItem.Leather01, Skyrim.MiscItem.Leather01) },
-            { Dragonborn.Keyword.DLC2ArmorMaterialMoragTong, (Dragonborn.MiscItem.DLC2ChitinPlate, Skyrim.MiscItem.Leather01 ) },
-            { Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotIron) },
-            { Dragonborn.Keyword.DLC2ArmorMaterialNordicLight, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotIron) },
-            { Dragonborn.Keyword.DLC2WeaponMaterialNordic, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotIron) },
+            { Dragonborn.Keyword.DLC2ArmorMaterialMoragTong, (Dragonborn.MiscItem.DLC2ChitinPlate, Skyrim.MiscItem.Leather01) },
+            { Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
+            { Dragonborn.Keyword.DLC2ArmorMaterialNordicLight, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
+            { Dragonborn.Keyword.DLC2WeaponMaterialNordic, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
             { Skyrim.Keyword.ArmorMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotCorundum) },
             { Skyrim.Keyword.WeapMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotCorundum) },
             { Skyrim.Keyword.ArmorMaterialScaled, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.WeapMaterialSilver, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.ingotSilver) },
-            { Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy, (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite) },
+            { Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy, (Dragonborn.MiscItem.DLC2OreStalhrim, Skyrim.MiscItem.IngotQuicksilver) },
             { Dragonborn.Keyword.DLC2ArmorMaterialStalhrimLight, (Dragonborn.MiscItem.DLC2OreStalhrim, Skyrim.MiscItem.IngotQuicksilver) },
             { Dragonborn.Keyword.DLC2WeaponMaterialStalhrim, (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite) },
             { Skyrim.Keyword.ArmorMaterialSteel, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
@@ -160,7 +164,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
         private static readonly Dictionary<IFormLinkGetter<IItemGetter>, string> PrimaryMaterialToCCOMaterialGlobal = new()
         {
             { Skyrim.MiscItem.Firewood01, "Wood" },
-            { Skyrim.MiscItem.DragonBone, "Bone" },
+            // TODO Bone? { Skyrim.MiscItem.DragonBone, "Bone" },
             { Skyrim.Ingredient.BoneMeal, "Bonemold" },
             { HearthFires.MiscItem.BYOHMaterialStoneBlock, "Stone" },
             // TODO Hide
@@ -205,14 +209,27 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             Dragonborn.MiscItem.DLC2OreStalhrim,
             HearthFires.MiscItem.BYOHMaterialStoneBlock,
             Skyrim.MiscItem.Firewood01,
-            Skyrim.Ingredient.BoneMeal
+            Skyrim.Ingredient.BoneMeal,
+            IngotGalatite,
+            IngotCalcinium
+        };
+
+        private static readonly HashSet<IFormLinkGetter<IItemGetter>> clothingMaterials = new()
+        {
+            Skyrim.MiscItem.RuinsLinenPile01,
+            Skyrim.MiscItem.Leather01,
+            Skyrim.Ingredient.TundraCotton,
+            Skyrim.MiscItem.LeatherStrips
         };
 
         private static readonly ModKey UpdateEsm = ModKey.FromNameAndExtension("Update.esm");
 
+        private static Lazy<Settings> settings = new();
+
         public static async Task<int> Main(string[] args)
         {
             return await SynthesisPipeline.Instance
+                .SetAutogeneratedSettings("Settings", "settings.json", out settings)
                 .AddPatch<ISkyrimMod, ISkyrimModGetter>(RunPatch)
                 .SetTypicalOpen(GameRelease.SkyrimSE, "YourPatcher.esp")
                 .Run(args);
@@ -222,6 +239,8 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
         {
             if (state.LoadOrder.PriorityOrder.HasMod(CompleteCraftingOverhaulRemasteredEsp, true))
             {
+                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy] = (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite);
+
                 MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
                 MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicLight] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
                 MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2WeaponMaterialNordic] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
@@ -245,6 +264,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 .WinningOverrides()
                 .Where(x => x.EditorID is not null)
                 .Where(x => x.Keywords is not null)
+                .Where(x => !x.Keywords!.Contains(Skyrim.Keyword.Dummy))
                 .Where(x => x.ObjectEffect.IsNull)
                 .ToDictionary(x => x.AsLinkGetter<IConstructibleGetter>());
 
@@ -256,12 +276,32 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             var ccoGlobalLookup = state.LoadOrder.PriorityOrder.Global()
                 .WinningOverrides()
                 .Where(x => x.EditorID?.StartsWith("CCO_") == true)
-                .ToDictionary(x => x.EditorID!, x => x.AsLinkGetter());
+                .GroupBy(x => x.EditorID!)
+                .ToDictionary(x => x.Key, x => x.First().AsLinkGetter());
 
-            Lazy<Dictionary<string, IFormLinkGetter<IItemGetter>>> materialLookup = new(() => state.LoadOrder.PriorityOrder.MiscItem()
+            Dictionary<IFormLinkGetter<IItemGetter>, (float weight, uint value)> materialsWeightsAndValues = new();
+            Dictionary<string, IFormLinkGetter<IItemGetter>> materialLookupByEditorID = new();
+
+            foreach (var miscItem in state.LoadOrder.PriorityOrder.IItem().WinningOverrides())
+            {
+                var miscItemLink = miscItem.AsLink();
+
+                if (miscItem.EditorID is not null)
+                    materialLookupByEditorID[miscItem.EditorID] = miscItemLink;
+
+                if (miscItem is IWeightValue hasMass)
+                    materialsWeightsAndValues[miscItemLink] = (hasMass.Weight, hasMass.Value);
+            }
+
+            var materialsByValueDensity = (from item in materialsWeightsAndValues
+                                           let valueDensity = item.Value.value / item.Value.weight
+                                           orderby valueDensity, item.Value.weight
+                                           select (item.Key, valueDensity)).ToList();
+
+            Lazy<Dictionary<string, IFormLinkGetter<IItemGetter>>> materialLookup = new(() => state.LoadOrder.PriorityOrder.IItem()
                 .WinningOverrides()
                 .Where(x => x.EditorID is not null)
-                .ToDictionary(x => x.EditorID!, x => x.AsLinkGetter<IItemGetter>()));
+                .ToDictionary(x => x.EditorID!, x => x.AsLinkGetter()));
 
             var armorCraftingRecipeLookup = new Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter>();
             var armorTemperingRecipeLookup = new Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter>();
@@ -269,7 +309,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             var weaponTemperingRecipeLookup = new Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter>();
 
             // TODO make this a setting
-            bool replaceRecipes = true;
+            bool replaceRecipes = settings.Value.ReplaceAllRecipes;
 
             foreach (var recipe in state.LoadOrder.PriorityOrder.ConstructibleObject()
                 .WinningOverrides())
@@ -365,177 +405,259 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
 
                 var armorType = armor.BodyTemplate!.ArmorType;
 
-                IFormLinkGetter<IItemGetter>? primaryMaterial = null;
-                IFormLinkGetter<IItemGetter>? secondaryMaterial = null;
-
-                ushort? primaryMaterialCount = null;
-                ushort? secondaryMaterialCount = null;
-                ushort? leatherCount = null;
-                ushort? leatherStripCount = null;
-
-                RecipeType? recipeType = null;
-
-                ReadOverridesFromKeywords(overrideKeywordLookup, materialLookup, armor.Keywords!, ref primaryMaterial, ref secondaryMaterial, ref primaryMaterialCount, ref secondaryMaterialCount, ref recipeType);
-
-                foreach (var keyword in armor.Keywords!)
+                if (armorType == ArmorType.Clothing)
                 {
-                    if (primaryMaterial is null && MaterialKeywordToMaterial.TryGetValue(keyword, out var materialData))
-                        (primaryMaterial, secondaryMaterial) = materialData;
-                }
+                    armorCraftingRecipeLookup.TryGetValue(armorLink, out var recipe);
+                    ConstructibleObject? newRecipe = null;
+                    if (recipe is null)
+                        newRecipe = recipes.AddNew("Recipe" + armorEditorID);
+                    else if (replaceRecipes)
+                        newRecipe = recipes.GetOrAddAsOverride(recipe);
 
-                primaryMaterial ??= Skyrim.MiscItem.IngotIron;
-                secondaryMaterial ??= Skyrim.MiscItem.IngotIron;
+                    if (newRecipe is null)
+                        continue;
 
-                if (recipeType is null || !ArmorRecipeToMaterialCount.ContainsKey(recipeType.Value))
-                {
-                    var firstPersonFlags = armor.BodyTemplate.FirstPersonFlags;
-
-                    foreach (var item in BipedFlagsToArmorRecipeTyoe)
-                    {
-                        if ((firstPersonFlags & item.Item1) == item.Item1)
-                        {
-                            recipeType = item.Item2;
-                            break;
-                        }
-                    }
-                }
-
-                recipeType ??= RecipeType.Gauntlets;
-
-                if (recipeType == RecipeType.Custom) continue;
-
-                var materialCounts = ArmorRecipeToMaterialCount[recipeType.Value];
-
-                primaryMaterialCount ??= materialCounts.primaryMaterialCount;
-                secondaryMaterialCount ??= materialCounts.secondaryMaterialCount;
-                leatherCount ??= materialCounts.leatherCount;
-                leatherStripCount ??= materialCounts.leatherStripCount;
-
-                if (secondaryMaterial.Equals(Skyrim.Ingredient.DaedraHeart))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    primaryMaterialCount += (ushort)(secondaryMaterialCount - 1);
-                    secondaryMaterialCount = 1;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                }
-                if (primaryMaterial.Equals(secondaryMaterial))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    primaryMaterialCount += secondaryMaterialCount;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    secondaryMaterialCount = 0;
-                }
-                if (primaryMaterial.Equals(Skyrim.MiscItem.Leather01))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    leatherCount += primaryMaterialCount;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    primaryMaterialCount = 0;
-                }
-                if (primaryMaterial.Equals(Skyrim.MiscItem.LeatherStrips))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    leatherStripCount += primaryMaterialCount;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    primaryMaterialCount = 0;
-                }
-                if (secondaryMaterial.Equals(Skyrim.MiscItem.Leather01))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    leatherCount += secondaryMaterialCount;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    secondaryMaterialCount = 0;
-                }
-                if (secondaryMaterial.Equals(Skyrim.MiscItem.LeatherStrips))
-                {
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-                    leatherStripCount += secondaryMaterialCount;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-                    secondaryMaterialCount = 0;
-                }
-
-                armorCraftingRecipeLookup.TryGetValue(armorLink, out var recipe);
-                ConstructibleObject? newRecipe = null;
-                if (recipe is null)
-                    newRecipe = recipes.AddNew("Recipe" + armorEditorID);
-                else if (replaceRecipes)
-                    newRecipe = recipes.GetOrAddAsOverride(recipe);
-
-                if (newRecipe is not null)
-                {
                     newRecipe.CreatedObject.SetTo(armor);
                     newRecipe.CreatedObjectCount = 1;
-                    bool needsForge = false;
-                    if (primaryMaterialCount > 0 && NeedsForge.Contains(primaryMaterial))
-                        needsForge = true;
-                    if (secondaryMaterialCount > 0 && NeedsForge.Contains(secondaryMaterial))
-                        needsForge = true;
-                    if (needsForge)
-                        newRecipe.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingSmithingForge);
-                    else
-                        newRecipe.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingTanningRack);
+                    newRecipe.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingTanningRack);
 
-                    newRecipe.Items = new();
-                    if (primaryMaterialCount > 0)
+                    // you can't temper clothes; delete temper recipe if found.
+                    if (armorTemperingRecipeLookup.TryGetValue(armorLink, out var temperRecipe))
+                        state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(temperRecipe).IsDeleted = true;
+
+                    var itemWeight = armor.Weight;
+                    var itemValue = armor.Value;
+                    float ingredientWeight = 0;
+                    uint ingredientValue = 0;
+
+                    newRecipe.Items ??= new();
+
+                    var items = newRecipe.Items;
+
+                    if (items.Count > 0)
                     {
-                        newRecipe.Items.Add(new()
+                        for (int i = items.Count - 1; i >= 0; i--)
                         {
-                            Item = new()
+                            var theItemLink = items[i].Item.Item;
+                            if (!clothingMaterials.Contains(theItemLink))
+                                items.RemoveAt(i);
+                            else
+                                if (materialsWeightsAndValues.TryGetValue(theItemLink, out var weightValue))
                             {
-                                Item = primaryMaterial.AsSetter(),
-                                Count = primaryMaterialCount.Value
+                                ingredientWeight += weightValue.weight;
+                                ingredientValue += weightValue.value;
                             }
-                        });
+                        }
                     }
-                    if (secondaryMaterialCount > 0)
+
+                    if (items.Count == 0)
                     {
-                        newRecipe.Items.Add(new()
+                        float valuePerWeight = itemValue / itemWeight;
+
+                        // the most value dense ingredient that has less value density than the finished article, logically additional value comes from the act of crafting.
+                        var ingredient = materialsByValueDensity.FindAll(i => i.valueDensity <= valuePerWeight && clothingMaterials.Contains(i.Key)).Select(i => i.Key).FirstOrDefault() ?? Skyrim.MiscItem.RuinsLinenPile01;
+
+                        // ingredient weight >= final item weight (the extra is wasted material)
+                        var count = (int)Math.Ceiling(itemWeight / materialsWeightsAndValues[ingredient].weight);
+
+                        items.Add(new()
                         {
                             Item = new()
                             {
-                                Item = secondaryMaterial.AsSetter(),
-                                Count = secondaryMaterialCount.Value
-                            }
-                        });
-                    }
-                    if (leatherCount > 0)
-                    {
-                        newRecipe.Items.Add(new()
-                        {
-                            Item = new()
-                            {
-                                Item = Skyrim.MiscItem.Leather01,
-                                Count = leatherCount.Value
-                            }
-                        });
-                    }
-                    if (leatherStripCount > 0)
-                    {
-                        newRecipe.Items.Add(new()
-                        {
-                            Item = new()
-                            {
-                                Item = Skyrim.MiscItem.LeatherStrips,
-                                Count = leatherStripCount.Value
+                                Item = ingredient.AsSetter(),
+                                Count = count
                             }
                         });
                     }
 
-                    if (ccoGlobalLookup.Count > 0)
+                }
+                else
+                {
+                    IFormLinkGetter<IItemGetter>? primaryMaterial = null;
+                    IFormLinkGetter<IItemGetter>? secondaryMaterial = null;
+
+                    ushort? primaryMaterialCount = null;
+                    ushort? secondaryMaterialCount = null;
+                    ushort? leatherCount = null;
+                    ushort? leatherStripCount = null;
+
+                    RecipeType? recipeType = null;
+
+                    ReadOverridesFromKeywords(overrideKeywordLookup,
+                                              materialLookup,
+                                              armor.Keywords!,
+                                              ref primaryMaterial,
+                                              ref secondaryMaterial,
+                                              ref primaryMaterialCount,
+                                              ref secondaryMaterialCount,
+                                              ref recipeType);
+
+                    foreach (var keyword in armor.Keywords!)
+                        if (primaryMaterial is null && MaterialKeywordToMaterial.TryGetValue(keyword, out var materialData))
+                            (primaryMaterial, secondaryMaterial) = materialData;
+
+                    primaryMaterial ??= Skyrim.MiscItem.IngotIron;
+                    secondaryMaterial ??= Skyrim.MiscItem.IngotIron;
+
+                    if (recipeType is null || !ArmorRecipeToMaterialCount.ContainsKey(recipeType.Value))
                     {
-                        //newRecipe.Conditions.Clear();
+                        var firstPersonFlags = armor.BodyTemplate.FirstPersonFlags;
 
-                        var globalSuffix = "Misc";
-                        if (PrimaryMaterialToCCOMaterialGlobal.TryGetValue(primaryMaterial, out var temp))
-                            globalSuffix = temp;
-                        ccoGlobalLookup.TryGetValue("CCO_CategoryForgeMaterial_" + globalSuffix, out var globalLink);
-
-                        // TODO conditions.
+                        foreach (var item in BipedFlagsToArmorRecipeTyoe)
+                        {
+                            if ((firstPersonFlags & item.Item1) == item.Item1)
+                            {
+                                recipeType = item.Item2;
+                                break;
+                            }
+                        }
                     }
+
+                    recipeType ??= RecipeType.Gauntlets;
+
+                    if (recipeType == RecipeType.Custom) continue;
+
+                    var materialCounts = ArmorRecipeToMaterialCount[recipeType.Value];
+
+                    primaryMaterialCount ??= materialCounts.primaryMaterialCount;
+                    secondaryMaterialCount ??= materialCounts.secondaryMaterialCount;
+                    leatherCount ??= materialCounts.leatherCount;
+                    leatherStripCount ??= materialCounts.leatherStripCount;
+
+                    if (secondaryMaterial.Equals(Skyrim.Ingredient.DaedraHeart))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        primaryMaterialCount += (ushort)(secondaryMaterialCount - 1);
+                        secondaryMaterialCount = 1;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                    }
+                    if (primaryMaterial.Equals(secondaryMaterial))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        primaryMaterialCount += secondaryMaterialCount;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                        secondaryMaterialCount = 0;
+                    }
+                    if (primaryMaterial.Equals(Skyrim.MiscItem.Leather01))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        leatherCount += primaryMaterialCount;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                        primaryMaterialCount = 0;
+                    }
+                    if (primaryMaterial.Equals(Skyrim.MiscItem.LeatherStrips))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        leatherStripCount += primaryMaterialCount;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                        primaryMaterialCount = 0;
+                    }
+                    if (secondaryMaterial.Equals(Skyrim.MiscItem.Leather01))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        leatherCount += secondaryMaterialCount;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                        secondaryMaterialCount = 0;
+                    }
+                    if (secondaryMaterial.Equals(Skyrim.MiscItem.LeatherStrips))
+                    {
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+                        leatherStripCount += secondaryMaterialCount;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+                        secondaryMaterialCount = 0;
+                    }
+
+                    armorCraftingRecipeLookup.TryGetValue(armorLink, out var recipe);
+                    ConstructibleObject? newRecipe = null;
+                    if (recipe is null)
+                        newRecipe = recipes.AddNew("Recipe" + armorEditorID);
+                    else if (replaceRecipes)
+                        newRecipe = recipes.GetOrAddAsOverride(recipe);
+
+                    if (newRecipe is not null)
+                    {
+                        newRecipe.CreatedObject.SetTo(armor);
+                        newRecipe.CreatedObjectCount = 1;
+                        bool needsForge = false;
+                        if (primaryMaterialCount > 0 && NeedsForge.Contains(primaryMaterial))
+                            needsForge = true;
+                        if (secondaryMaterialCount > 0 && NeedsForge.Contains(secondaryMaterial))
+                            needsForge = true;
+                        if (needsForge)
+                            newRecipe.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingSmithingForge);
+                        else
+                            newRecipe.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingTanningRack);
+
+                        newRecipe.Items = new();
+                        if (primaryMaterialCount > 0)
+                        {
+                            newRecipe.Items.Add(new()
+                            {
+                                Item = new()
+                                {
+                                    Item = primaryMaterial.AsSetter(),
+                                    Count = primaryMaterialCount.Value
+                                }
+                            });
+                        }
+                        if (secondaryMaterialCount > 0)
+                        {
+                            newRecipe.Items.Add(new()
+                            {
+                                Item = new()
+                                {
+                                    Item = secondaryMaterial.AsSetter(),
+                                    Count = secondaryMaterialCount.Value
+                                }
+                            });
+                        }
+                        if (leatherCount > 0)
+                        {
+                            newRecipe.Items.Add(new()
+                            {
+                                Item = new()
+                                {
+                                    Item = Skyrim.MiscItem.Leather01,
+                                    Count = leatherCount.Value
+                                }
+                            });
+                        }
+                        if (leatherStripCount > 0)
+                        {
+                            newRecipe.Items.Add(new()
+                            {
+                                Item = new()
+                                {
+                                    Item = Skyrim.MiscItem.LeatherStrips,
+                                    Count = leatherStripCount.Value
+                                }
+                            });
+                        }
+
+                        if (ccoGlobalLookup.Count > 0)
+                        {
+                            //newRecipe.Conditions.Clear();
+
+                            var globalSuffix = "Misc";
+                            if (PrimaryMaterialToCCOMaterialGlobal.TryGetValue(primaryMaterial, out var temp))
+                                globalSuffix = temp;
+                            ccoGlobalLookup.TryGetValue("CCO_CategoryForgeMaterial_" + globalSuffix, out var globalLink);
+
+                            // TODO conditions.
+                        }
+                    }
+
+                    MakeTemperRecipe(armorTemperingRecipeLookup,
+                                        temperItemsDict,
+                                        temperRecipeConditions,
+                                        replaceRecipes,
+                                        recipes,
+                                        Skyrim.Keyword.CraftingSmithingArmorTable,
+                                        primaryMaterial,
+                                        armorLink,
+                                        armorEditorID);
                 }
 
-                if (armorType != ArmorType.Clothing)
-                    MakeTemperRecipe(armorTemperingRecipeLookup, temperItemsDict, temperRecipeConditions, replaceRecipes, recipes, Skyrim.Keyword.CraftingSmithingArmorTable, primaryMaterial, armorLink, armorEditorID);
             }
 
             foreach (var weaponEntry in weaponLookup)
@@ -553,7 +675,14 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
 
                 RecipeType? recipeType = null;
 
-                ReadOverridesFromKeywords(overrideKeywordLookup, materialLookup, weapon.Keywords!, ref primaryMaterial, ref secondaryMaterial, ref primaryMaterialCount, ref secondaryMaterialCount, ref recipeType);
+                ReadOverridesFromKeywords(overrideKeywordLookup,
+                                          materialLookup,
+                                          weapon.Keywords!,
+                                          ref primaryMaterial,
+                                          ref secondaryMaterial,
+                                          ref primaryMaterialCount,
+                                          ref secondaryMaterialCount,
+                                          ref recipeType);
 
                 foreach (var keyword in weapon.Keywords!)
                 {
@@ -684,7 +813,15 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 }
 
                 if (recipeType != RecipeType.Staff)
-                    MakeTemperRecipe(weaponTemperingRecipeLookup, temperItemsDict, temperRecipeConditions, replaceRecipes, recipes, Skyrim.Keyword.CraftingSmithingSharpeningWheel, primaryMaterial, weaponLink, weaponEditorID);
+                    MakeTemperRecipe(weaponTemperingRecipeLookup,
+                                     temperItemsDict,
+                                     temperRecipeConditions,
+                                     replaceRecipes,
+                                     recipes,
+                                     Skyrim.Keyword.CraftingSmithingSharpeningWheel,
+                                     primaryMaterial,
+                                     weaponLink,
+                                     weaponEditorID);
             }
         }
 
