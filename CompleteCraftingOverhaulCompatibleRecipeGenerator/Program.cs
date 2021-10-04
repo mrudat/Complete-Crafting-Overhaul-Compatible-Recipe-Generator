@@ -80,13 +80,13 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             { Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
             { Dragonborn.Keyword.DLC2ArmorMaterialNordicLight, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
             { Dragonborn.Keyword.DLC2WeaponMaterialNordic, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotQuicksilver) },
-            { Skyrim.Keyword.ArmorMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotCorundum) },
-            { Skyrim.Keyword.WeapMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotCorundum) },
+            { Skyrim.Keyword.ArmorMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotSteel) },
+            { Skyrim.Keyword.WeapMaterialOrcish, (Skyrim.MiscItem.IngotOrichalcum, Skyrim.MiscItem.IngotSteel) },
             { Skyrim.Keyword.ArmorMaterialScaled, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.WeapMaterialSilver, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.ingotSilver) },
             { Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy, (Dragonborn.MiscItem.DLC2OreStalhrim, Skyrim.MiscItem.IngotQuicksilver) },
             { Dragonborn.Keyword.DLC2ArmorMaterialStalhrimLight, (Dragonborn.MiscItem.DLC2OreStalhrim, Skyrim.MiscItem.IngotQuicksilver) },
-            { Dragonborn.Keyword.DLC2WeaponMaterialStalhrim, (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite) },
+            { Dragonborn.Keyword.DLC2WeaponMaterialStalhrim, (Dragonborn.MiscItem.DLC2OreStalhrim, Skyrim.MiscItem.IngotQuicksilver) },
             { Skyrim.Keyword.ArmorMaterialSteel, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
             { Skyrim.Keyword.WeapMaterialSteel, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.IngotSteel) },
             { Skyrim.Keyword.ArmorMaterialSteelPlate, (Skyrim.MiscItem.IngotSteel, Skyrim.MiscItem.Leather01) },
@@ -214,12 +214,34 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             IngotCalcinium
         };
 
+        private static readonly Dictionary<IFormLinkGetter<IItemGetter>, IFormLinkGetter<IPerkGetter>> materialToCraftingPerk = new()
+        {
+            { Skyrim.MiscItem.IngotSteel, Skyrim.Perk.SteelSmithing },
+            { Skyrim.MiscItem.IngotDwarven, Skyrim.Perk.DwarvenSmithing },
+            { Skyrim.MiscItem.IngotIMoonstone, Skyrim.Perk.ElvenSmithing },
+            { Skyrim.MiscItem.IngotOrichalcum, Skyrim.Perk.OrcishSmithing },
+            { Skyrim.MiscItem.IngotMalachite, Skyrim.Perk.GlassSmithing },
+            { Skyrim.MiscItem.IngotQuicksilver, Skyrim.Perk.AdvancedArmors },
+            { Skyrim.MiscItem.IngotEbony, Skyrim.Perk.EbonySmithing },
+            { Skyrim.Ingredient.DaedraHeart, Skyrim.Perk.DaedricSmithing },
+            { Skyrim.Ingredient.BoneMeal, Dragonborn.Perk.DLC2Smithing },
+            { Skyrim.MiscItem.DragonBone, Skyrim.Perk.DragonArmor },
+            { Skyrim.MiscItem.DragonScales, Skyrim.Perk.DragonArmor },
+        };
+
         private static readonly HashSet<IFormLinkGetter<IItemGetter>> clothingMaterials = new()
         {
             Skyrim.MiscItem.RuinsLinenPile01,
             Skyrim.MiscItem.Leather01,
             Skyrim.Ingredient.TundraCotton,
             Skyrim.MiscItem.LeatherStrips
+        };
+
+        private static readonly HashSet<IFormLink<IKeywordGetter>> jewelryKeywords = new()
+        {
+            Skyrim.Keyword.JewelryExpensive,
+            Skyrim.Keyword.ArmorJewelry,
+            Skyrim.Keyword.VendorItemJewelry
         };
 
         private static readonly ModKey UpdateEsm = ModKey.FromNameAndExtension("Update.esm");
@@ -239,11 +261,9 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
         {
             if (state.LoadOrder.PriorityOrder.HasMod(CompleteCraftingOverhaulRemasteredEsp, true))
             {
-                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy] = (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite);
+                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2WeaponMaterialStalhrim] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimLight] = (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite);
 
-                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
-                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicLight] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
-                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2WeaponMaterialNordic] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
+                MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicHeavy] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialNordicLight] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2WeaponMaterialNordic] = (IngotGalatite, Skyrim.MiscItem.IngotOrichalcum);
 
                 MaterialKeywordToMaterial[Skyrim.Keyword.ArmorMaterialElven] = MaterialKeywordToMaterial[Skyrim.Keyword.WeapMaterialElven] = (IngotCalcinium, Skyrim.MiscItem.IngotQuicksilver);
 
@@ -254,9 +274,10 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 .WinningOverrides()
                 .Where(x => x.EditorID is not null)
                 .Where(x => x.BodyTemplate is not null)
+                .Where(x => x.Race == Skyrim.Race.DefaultRace)
                 .Where(x => x.BodyTemplate?.Flags.HasFlag(BodyTemplate.Flag.NonPlayable) == false)
                 .Where(x => x.Keywords is not null)
-                .Where(x => x.Keywords?.Any(x => x.Equals(Skyrim.Keyword.VendorItemJewelry)) == false)
+                .Where(x => !x.Keywords!.Any(x => jewelryKeywords.Contains(x)))
                 .Where(x => x.ObjectEffect.IsNull)
                 .ToDictionary(x => x.AsLinkGetter<IConstructibleGetter>());
 
@@ -264,14 +285,25 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 .WinningOverrides()
                 .Where(x => x.EditorID is not null)
                 .Where(x => x.Keywords is not null)
-                .Where(x => !x.Keywords!.Contains(Skyrim.Keyword.Dummy))
+                .Where(x => x.Data is not null)
                 .Where(x => x.ObjectEffect.IsNull)
+                .Where(x => !x.Data!.Flags.HasFlag(WeaponData.Flag.NonPlayable))
+                .Where(x => !x.Data!.Flags.HasFlag(WeaponData.Flag.CantDrop))
+                .Where(x => !x.Keywords!.Contains(Skyrim.Keyword.Dummy))
                 .ToDictionary(x => x.AsLinkGetter<IConstructibleGetter>());
 
-            var overrideKeywordLookup = state.LoadOrder.PriorityOrder.Keyword()
-                .WinningOverrides()
-                .Where(x => x.EditorID?.StartsWith(CCORGPrefix) == true)
-                .ToDictionary(x => x.AsLinkGetter(), x => x.EditorID!);
+            Dictionary<IFormLinkGetter<IKeywordGetter>, string>? overrideKeywordLookup = new();
+
+            var costumeKeyword = new HashSet<IFormLinkGetter<IKeywordGetter>>();
+
+            foreach (var keyword in state.LoadOrder.PriorityOrder.Keyword().WinningOverrides())
+            {
+                if (keyword.EditorID is null) continue;
+                if (keyword.EditorID.StartsWith(CCORGPrefix))
+                    overrideKeywordLookup.Add(keyword.AsLink(), keyword.EditorID);
+                if (keyword.EditorID == "CostumeShop_CostumeKeyword")
+                    costumeKeyword.Add(keyword.AsLink());
+            }
 
             var ccoGlobalLookup = state.LoadOrder.PriorityOrder.Global()
                 .WinningOverrides()
@@ -289,7 +321,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 if (miscItem.EditorID is not null)
                     materialLookupByEditorID[miscItem.EditorID] = miscItemLink;
 
-                if (miscItem is IWeightValue hasMass)
+                if (miscItem is IWeightValueGetter hasMass)
                     materialsWeightsAndValues[miscItemLink] = (hasMass.Weight, hasMass.Value);
             }
 
@@ -297,11 +329,6 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                                            let valueDensity = item.Value.value / item.Value.weight
                                            orderby valueDensity, item.Value.weight
                                            select (item.Key, valueDensity)).ToList();
-
-            Lazy<Dictionary<string, IFormLinkGetter<IItemGetter>>> materialLookup = new(() => state.LoadOrder.PriorityOrder.IItem()
-                .WinningOverrides()
-                .Where(x => x.EditorID is not null)
-                .ToDictionary(x => x.EditorID!, x => x.AsLinkGetter()));
 
             var armorCraftingRecipeLookup = new Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter>();
             var armorTemperingRecipeLookup = new Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter>();
@@ -329,7 +356,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                         else
                         {
                             if (replaceRecipes)
-                                state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe).IsDeleted = true;
+                                Delete(state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe));
                         }
                     }
                     else if (weaponLookup.ContainsKey(recipe.CreatedObject))
@@ -339,7 +366,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                         else
                         {
                             if (replaceRecipes)
-                                state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe).IsDeleted = true;
+                                Delete(state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe));
                         }
                     }
                 }
@@ -350,7 +377,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                     else
                     {
                         if (replaceRecipes)
-                            state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe).IsDeleted = true;
+                            Delete(state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe));
                     }
                 }
                 else if (recipe.WorkbenchKeyword.Equals(Skyrim.Keyword.CraftingSmithingSharpeningWheel))
@@ -360,7 +387,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                     else
                     {
                         if (replaceRecipes)
-                            state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe).IsDeleted = true;
+                            Delete(state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(recipe));
                     }
                 }
             }
@@ -423,53 +450,68 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
 
                     // you can't temper clothes; delete temper recipe if found.
                     if (armorTemperingRecipeLookup.TryGetValue(armorLink, out var temperRecipe))
-                        state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(temperRecipe).IsDeleted = true;
+                        Delete(state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(temperRecipe));
 
                     var itemWeight = armor.Weight;
-                    var itemValue = armor.Value;
-                    float ingredientWeight = 0;
-                    uint ingredientValue = 0;
 
-                    newRecipe.Items ??= new();
+                    // minimum 10% value for crafting.
+                    var itemValue = (uint)Math.Ceiling(armor.Value * 0.9);
 
-                    var items = newRecipe.Items;
+                    var items = newRecipe.Items ??= new();
 
-                    if (items.Count > 0)
+                    items.Clear();
+
+                    if (costumeKeyword.Count > 0 && armor.Keywords!.Any(k => costumeKeyword.Contains(k)))
                     {
-                        for (int i = items.Count - 1; i >= 0; i--)
-                        {
-                            var theItemLink = items[i].Item.Item;
-                            if (!clothingMaterials.Contains(theItemLink))
-                                items.RemoveAt(i);
-                            else
-                                if (materialsWeightsAndValues.TryGetValue(theItemLink, out var weightValue))
-                            {
-                                ingredientWeight += weightValue.weight;
-                                ingredientValue += weightValue.value;
-                            }
-                        }
-                    }
+                        IFormLinkGetter<IItemGetter>? primaryMaterial = null;
 
-                    if (items.Count == 0)
-                    {
-                        float valuePerWeight = itemValue / itemWeight;
+                        foreach (var keyword in armor.Keywords!)
+                            if (primaryMaterial is null && MaterialKeywordToMaterial.TryGetValue(keyword, out var materialData))
+                                (primaryMaterial, _) = materialData;
 
-                        // the most value dense ingredient that has less value density than the finished article, logically additional value comes from the act of crafting.
-                        var ingredient = materialsByValueDensity.FindAll(i => i.valueDensity <= valuePerWeight && clothingMaterials.Contains(i.Key)).Select(i => i.Key).FirstOrDefault() ?? Skyrim.MiscItem.RuinsLinenPile01;
+                        primaryMaterial ??= Skyrim.MiscItem.IngotIron;
 
-                        // ingredient weight >= final item weight (the extra is wasted material)
-                        var count = (int)Math.Ceiling(itemWeight / materialsWeightsAndValues[ingredient].weight);
+                        var (weight, value) = materialsWeightsAndValues[primaryMaterial];
+
+                        itemWeight -= weight;
+                        itemValue -= value;
 
                         items.Add(new()
                         {
                             Item = new()
                             {
-                                Item = ingredient.AsSetter(),
-                                Count = count
+                                Item = primaryMaterial.AsSetter(),
+                                Count = 1
                             }
                         });
                     }
 
+                    float valueDensity = itemValue / itemWeight;
+
+                    // the most value dense ingredient that has less value density than the finished article, logically additional value comes from the act of crafting.
+                    var ingredient = materialsByValueDensity.FindAll(i => i.valueDensity <= valueDensity && clothingMaterials.Contains(i.Key)).Select(i => i.Key).FirstOrDefault() ?? Skyrim.MiscItem.RuinsLinenPile01;
+
+                    foreach (var candidate in materialsByValueDensity)
+                    {
+                        if (candidate.valueDensity <= valueDensity)
+                            if (clothingMaterials.Contains(candidate.Key))
+                            {
+                                ingredient = candidate.Key;
+                                break;
+                            }
+                    }
+
+                    // ingredient weight >= final item weight (the extra is wasted material)
+                    var count = (int)Math.Ceiling(itemWeight / materialsWeightsAndValues[ingredient].weight);
+
+                    items.Add(new()
+                    {
+                        Item = new()
+                        {
+                            Item = ingredient.AsSetter(),
+                            Count = count
+                        }
+                    });
                 }
                 else
                 {
@@ -484,7 +526,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                     RecipeType? recipeType = null;
 
                     ReadOverridesFromKeywords(overrideKeywordLookup,
-                                              materialLookup,
+                                              materialLookupByEditorID,
                                               armor.Keywords!,
                                               ref primaryMaterial,
                                               ref secondaryMaterial,
@@ -676,7 +718,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 RecipeType? recipeType = null;
 
                 ReadOverridesFromKeywords(overrideKeywordLookup,
-                                          materialLookup,
+                                          materialLookupByEditorID,
                                           weapon.Keywords!,
                                           ref primaryMaterial,
                                           ref secondaryMaterial,
@@ -693,12 +735,22 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                         recipeType = temp;
                 }
 
-                // TODO if not keywords, then what?
+                recipeType ??= (weapon.Data?.AnimationType) switch
+                {
+                    WeaponAnimationType.OneHandSword => RecipeType.Sword,
+                    WeaponAnimationType.OneHandDagger => RecipeType.Dagger,
+                    WeaponAnimationType.OneHandAxe => RecipeType.WarAxe,
+                    WeaponAnimationType.OneHandMace => RecipeType.Mace,
+                    WeaponAnimationType.TwoHandSword => RecipeType.Greatsword,
+                    WeaponAnimationType.TwoHandAxe => RecipeType.Battleaxe,
+                    WeaponAnimationType.Bow => RecipeType.Bow,
+                    WeaponAnimationType.Staff => RecipeType.Staff,
+                    WeaponAnimationType.Crossbow => RecipeType.Bow,
+                    _ => RecipeType.Dagger,
+                };
 
                 primaryMaterial ??= Skyrim.MiscItem.IngotIron;
                 secondaryMaterial ??= Skyrim.MiscItem.IngotIron;
-
-                recipeType ??= RecipeType.Dagger;
 
                 if (recipeType == RecipeType.Custom) continue;
 
@@ -825,6 +877,17 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             }
         }
 
+        private static void Delete(IConstructibleObject constructibleObject)
+        {
+            constructibleObject.IsDeleted = true;
+            constructibleObject.EditorID = null;
+            constructibleObject.CreatedObject.SetToNull();
+            constructibleObject.Items = null;
+            constructibleObject.Conditions.Clear();
+            constructibleObject.WorkbenchKeyword.SetToNull();
+            constructibleObject.CreatedObjectCount = null;
+        }
+
         private static void MakeTemperRecipe(
             Dictionary<IFormLinkGetter<IConstructibleGetter>, IConstructibleObjectGetter> armorTemperingRecipeLookup,
             Dictionary<IFormLinkGetter<IItemGetter>, Noggog.ExtendedList<ContainerEntry>> temperItemsDict,
@@ -871,7 +934,15 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             newTemperRecipe.Conditions.AddRange(temperRecipeConditions.Value);
         }
 
-        private static void ReadOverridesFromKeywords(Dictionary<IFormLinkGetter<IKeywordGetter>, string> keywordLookup, Lazy<Dictionary<string, IFormLinkGetter<IItemGetter>>> materialLookup, IReadOnlyList<IFormLinkGetter<IKeywordGetter>> keywords, ref IFormLinkGetter<IItemGetter>? primaryMaterial, ref IFormLinkGetter<IItemGetter>? secondaryMaterial, ref ushort? primaryMaterialCount, ref ushort? secondaryMaterialCount, ref RecipeType? recipeType)
+        private static void ReadOverridesFromKeywords(
+            Dictionary<IFormLinkGetter<IKeywordGetter>, string> keywordLookup,
+            Dictionary<string, IFormLinkGetter<IItemGetter>> materialLookup,
+            IReadOnlyList<IFormLinkGetter<IKeywordGetter>> keywords,
+            ref IFormLinkGetter<IItemGetter>? primaryMaterial,
+            ref IFormLinkGetter<IItemGetter>? secondaryMaterial,
+            ref ushort? primaryMaterialCount,
+            ref ushort? secondaryMaterialCount,
+            ref RecipeType? recipeType)
         {
             foreach (var keyword in keywords)
             {
@@ -884,9 +955,9 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                         if (ushort.TryParse(keywordEditorID[SecondaryMaterialCountOverrideKeywordPrefix.Length..], out var parsedCount))
                             secondaryMaterialCount = parsedCount;
                     if (primaryMaterial is null && keywordEditorID.StartsWith(PrimaryMaterialOverrideKeywordPrefix))
-                        materialLookup.Value.TryGetValue(keywordEditorID[PrimaryMaterialOverrideKeywordPrefix.Length..], out primaryMaterial);
+                        materialLookup.TryGetValue(keywordEditorID[PrimaryMaterialOverrideKeywordPrefix.Length..], out primaryMaterial);
                     if (secondaryMaterial is null && keywordEditorID.StartsWith(SecondaryMaterialOverrideKeywordPrefix))
-                        materialLookup.Value.TryGetValue(keywordEditorID[SecondaryMaterialOverrideKeywordPrefix.Length..], out secondaryMaterial);
+                        materialLookup.TryGetValue(keywordEditorID[SecondaryMaterialOverrideKeywordPrefix.Length..], out secondaryMaterial);
                     if (recipeType is null && keywordEditorID.StartsWith(RecipeTypeOverrideKeywordPrefix))
                         if (Enum.TryParse<RecipeType>(keywordEditorID[RecipeTypeOverrideKeywordPrefix.Length..], false, out var temp))
                             recipeType = temp;
