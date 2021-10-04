@@ -274,8 +274,8 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 .WinningOverrides()
                 .Where(x => x.EditorID is not null)
                 .Where(x => x.BodyTemplate is not null)
-                .Where(x => x.Race == Skyrim.Race.DefaultRace)
-                .Where(x => x.BodyTemplate?.Flags.HasFlag(BodyTemplate.Flag.NonPlayable) == false)
+                .Where(x => x.Race.FormKey == Skyrim.Race.DefaultRace.FormKey)
+                .Where(x => !x.BodyTemplate!.Flags.HasFlag(BodyTemplate.Flag.NonPlayable))
                 .Where(x => x.Keywords is not null)
                 .Where(x => !x.Keywords!.Any(x => jewelryKeywords.Contains(x)))
                 .Where(x => x.ObjectEffect.IsNull)
@@ -435,7 +435,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                 if (armorType == ArmorType.Clothing)
                 {
                     armorCraftingRecipeLookup.TryGetValue(armorLink, out var recipe);
-                    ConstructibleObject? newRecipe = null;
+                    IConstructibleObject? newRecipe = null;
                     if (recipe is null)
                         newRecipe = recipes.AddNew("Recipe" + armorEditorID);
                     else if (replaceRecipes)
@@ -476,6 +476,9 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                         itemWeight -= weight;
                         itemValue -= value;
 
+                        if (itemWeight <= 0) itemWeight = 0.01f;
+                        if (itemValue <= 0) itemValue = 1;
+
                         items.Add(new()
                         {
                             Item = new()
@@ -491,6 +494,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                     // the most value dense ingredient that has less value density than the finished article, logically additional value comes from the act of crafting.
                     var ingredient = materialsByValueDensity.FindAll(i => i.valueDensity <= valueDensity && clothingMaterials.Contains(i.Key)).Select(i => i.Key).FirstOrDefault() ?? Skyrim.MiscItem.RuinsLinenPile01;
 
+                    /*
                     foreach (var candidate in materialsByValueDensity)
                     {
                         if (candidate.valueDensity <= valueDensity)
@@ -500,9 +504,13 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
                                 break;
                             }
                     }
+                    */
 
                     // ingredient weight >= final item weight (the extra is wasted material)
                     var count = (int)Math.Ceiling(itemWeight / materialsWeightsAndValues[ingredient].weight);
+
+                    if (count <= 0)
+                        count = 1;
 
                     items.Add(new()
                     {
