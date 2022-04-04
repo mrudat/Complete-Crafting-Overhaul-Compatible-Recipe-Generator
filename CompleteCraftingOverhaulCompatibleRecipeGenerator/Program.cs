@@ -901,7 +901,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             Dictionary<IFormLinkGetter<IItemGetter>, Noggog.ExtendedList<ContainerEntry>> temperItemsDict,
             Lazy<Noggog.ExtendedList<Condition>> temperRecipeConditions,
             bool replaceRecipes,
-            Group<ConstructibleObject> recipes,
+            SkyrimGroup<ConstructibleObject> recipes,
             FormLink<IKeywordGetter> workbenchKeyword,
             IFormLinkGetter<IItemGetter> primaryMaterial,
             IFormLinkGetter<IConstructibleGetter> armorLink, string armorEditorID)
