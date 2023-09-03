@@ -259,7 +259,7 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
 
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
-            if (state.LoadOrder.PriorityOrder.HasMod(CompleteCraftingOverhaulRemasteredEsp, true))
+            if (state.LoadOrder.ModExists(CompleteCraftingOverhaulRemasteredEsp, true))
             {
                 MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2WeaponMaterialStalhrim] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimHeavy] = MaterialKeywordToMaterial[Dragonborn.Keyword.DLC2ArmorMaterialStalhrimLight] = (Dragonborn.MiscItem.DLC2OreStalhrim, IngotGalatite);
 
@@ -395,30 +395,31 @@ namespace CompleteCraftingOverhaulCompatibleRecipeGenerator
             Dictionary<IFormLinkGetter<IItemGetter>, Noggog.ExtendedList<ContainerEntry>> temperItemsDict = new();
 
             Lazy<Noggog.ExtendedList<Condition>> temperRecipeConditions = new(
-                () => new Noggog.ExtendedList<Condition>
+                () =>
                 {
-                    new ConditionFloat()
+                    var ret = new Noggog.ExtendedList<Condition>();
+                    ret.Add(new ConditionFloat()
                     {
                         CompareOperator = CompareOperator.NotEqualTo,
                         Flags = Condition.Flag.OR,
                         ComparisonValue = 1,
-                        Data = new FunctionConditionData()
+                        Data = new EPTemperingItemIsEnchantedConditionData()
                         {
-                            Function = Condition.Function.EPTemperingItemIsEnchanted,
                             RunOnType = Condition.RunOnType.Subject
                         }
-                    },
-                    new ConditionFloat()
+                    });
+                    var hasPerkData = new HasPerkConditionData()
+                    {
+                        RunOnType = Condition.RunOnType.Subject
+                    };
+                    hasPerkData.Perk.Link.SetTo(Skyrim.Perk.ArcaneBlacksmith);
+                    ret.Add(new ConditionFloat()
                     {
                         CompareOperator = CompareOperator.EqualTo,
                         ComparisonValue = 1,
-                        Data = new FunctionConditionData()
-                        {
-                            Function = Condition.Function.HasPerk,
-                            ParameterOneRecord = Skyrim.Perk.ArcaneBlacksmith,
-                            RunOnType = Condition.RunOnType.Subject
-                        }
-                    }
+                        Data = hasPerkData
+                    });
+                    return ret;
                 }
             );
 
